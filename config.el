@@ -6,7 +6,6 @@
 
 (use-package! agent-shell
   :config
-  (setq agent-shell-thought-process-expand-by-default t)
   (add-to-list 'agent-shell-agent-configs (agent-shell-pool-make-config) t)
 
   (cond
