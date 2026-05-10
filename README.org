@@ -1,15 +1,31 @@
-#+TITLE:   tools/agent-shell
-#+DATE:    2026-05-09
-#+SINCE:   private module
+#+TITLE:   doom-agent-shell
+#+AUTHOR:  phairoh
 
-* Description
-Integrates [[https://github.com/xenodium/agent-shell][agent-shell]] into Doom Emacs — a native shell for interacting with LLM
-coding agents (Claude, Gemini, Codex, etc.) via the [[https://agentclientprotocol.com][Agent Client Protocol (ACP)]].
+A [[https://github.com/doomemacs/doomemacs][Doom Emacs]] module for [[https://github.com/xenodium/agent-shell][agent-shell]] — interact with LLM coding agents
+(Claude, Gemini, Codex, Poolside, and more) from Emacs via the
+[[https://agentclientprotocol.com][Agent Client Protocol (ACP)]].
+
+* Installation
+
+Clone this repo into your Doom modules directory:
+
+#+begin_src sh
+git clone https://github.com/phairoh/doom-agent-shell \
+  ~/.config/doom/modules/tools/agent-shell
+#+end_src
+
+Enable the module in your =init.el= under =:tools=, with at least one provider flag:
+
+#+begin_src emacs-lisp
+:tools
+(agent-shell +claude)   ; or +gemini, +codex, +goose, etc.
+#+end_src
+
+Run =doom sync= and restart Emacs.
 
 * Flags
-Exactly one provider flag should be set — it becomes the default agent when
-opening a shell. Multiple flags are allowed (e.g. for doctor checks on all
-installed tools), but only the first one in this list sets the preferred agent.
+The first provider flag sets the default agent. Additional flags only enable
+=doom doctor= checks for those providers.
 
 | Flag        | Provider            |
 |-------------+---------------------|
@@ -23,6 +39,7 @@ installed tools), but only the first one in this list sets the preferred agent.
 | =+cursor=   | Cursor              |
 | =+github=   | GitHub Copilot      |
 | =+opencode= | OpenCode            |
+| =+pool=     | Poolside pool       |
 
 * Prerequisites
 Run =doom doctor= after installation to verify dependencies are detected.
@@ -76,31 +93,40 @@ Run =doom doctor= after installation to verify dependencies are detected.
 ** +opencode
 - =opencode=: https://opencode.ai
 
+** +pool
+- =pool= CLI:
+  #+begin_src sh
+  curl -fsSL https://downloads.poolside.ai/pool/install.sh | sh
+  pool login
+  #+end_src
+
 * Usage
 ** Starting a shell
-| Keybinding | Description                    |
-|------------+--------------------------------|
-| =SPC A a=  | Open or reuse an agent shell   |
-| =SPC A n=  | Start a new agent shell        |
-| =SPC A t=  | Toggle agent shell window      |
+| Keybinding | Description                  |
+|------------+------------------------------|
+| =SPC A a=  | Open or reuse an agent shell |
+| =SPC A n=  | Start a new agent shell      |
+| =SPC A t=  | Toggle agent shell window    |
+
+Use =C-u SPC A a= to force the agent picker when a default is set.
 
 ** Sending content
-| Keybinding | Description                              |
-|------------+------------------------------------------|
-| =SPC A s=  | Send region or error at point to shell   |
-| =SPC A f=  | Send current file to shell               |
-| =SPC A c=  | Compose a multi-line prompt              |
-| =SPC A i=  | Paste clipboard image into shell         |
+| Keybinding | Description                            |
+|------------+----------------------------------------|
+| =SPC A s=  | Send region or error at point to shell |
+| =SPC A f=  | Send current file to shell             |
+| =SPC A c=  | Compose a multi-line prompt            |
+| =SPC A i=  | Paste clipboard image into shell       |
 
 ** Inside the shell
-| Keybinding  | Description                         |
-|-------------+-------------------------------------|
-| =RET=       | Submit prompt (normal mode)         |
-| =RET=       | Insert newline (insert mode)        |
-| =C-c C-c=   | Interrupt current agent operation   |
-| =TAB= / =S-TAB= | Navigate interactive elements   |
-| =C-<tab>=   | Cycle session mode                  |
-| =C-c C-o=   | Switch between shell and viewport   |
+| Keybinding      | Description                       |
+|-----------------+-----------------------------------|
+| =RET=           | Submit prompt (normal mode)       |
+| =RET=           | Insert newline (insert mode)      |
+| =C-c C-c=       | Interrupt current agent operation |
+| =TAB= / =S-TAB= | Navigate interactive elements     |
+| =C-<tab>=       | Cycle session mode                |
+| =C-c C-o=       | Switch between shell and viewport |
 
 ** Evil notes
 - Normal mode =RET= submits the prompt.
@@ -109,13 +135,23 @@ Run =doom doctor= after installation to verify dependencies are detected.
   pass through directly. Press =C-z= to enter evil if needed.
 
 * Configuration
-Set authentication in your =config.el=:
-#+begin_src emacs-lisp
-;; Claude subscription login (default when using +claude)
-(setq agent-shell-anthropic-authentication
-      (agent-shell-anthropic-make-authentication :login t))
+Authentication is handled by each provider's CLI (run =claude login=,
+=pool login=, etc. outside Emacs first). For API key based providers,
+set authentication in your private =config.el=:
 
-;; Or API key
+#+begin_src emacs-lisp
+;; Claude — API key instead of subscription login
 (setq agent-shell-anthropic-authentication
       (agent-shell-anthropic-make-authentication :api-key "your-key-here"))
+
+;; Gemini — API key
+(setq agent-shell-google-authentication
+      (agent-shell-google-make-authentication :api-key "your-key-here"))
 #+end_src
+
+See [[https://github.com/xenodium/agent-shell][agent-shell]] for full authentication documentation for each provider.
+
+* Poolside pool
+This module includes =agent-shell-pool.el=, a provider extension for
+[[https://poolside.ai][Poolside]]'s =pool= CLI. Pool is ACP-compatible and handles authentication
+via =pool login=. It is not part of the upstream agent-shell package.
