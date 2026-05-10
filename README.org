@@ -1,0 +1,121 @@
+#+TITLE:   tools/agent-shell
+#+DATE:    2026-05-09
+#+SINCE:   private module
+
+* Description
+Integrates [[https://github.com/xenodium/agent-shell][agent-shell]] into Doom Emacs — a native shell for interacting with LLM
+coding agents (Claude, Gemini, Codex, etc.) via the [[https://agentclientprotocol.com][Agent Client Protocol (ACP)]].
+
+* Flags
+Exactly one provider flag should be set — it becomes the default agent when
+opening a shell. Multiple flags are allowed (e.g. for doctor checks on all
+installed tools), but only the first one in this list sets the preferred agent.
+
+| Flag        | Provider            |
+|-------------+---------------------|
+| =+claude=   | Anthropic Claude    |
+| =+gemini=   | Google Gemini CLI   |
+| =+codex=    | OpenAI Codex        |
+| =+goose=    | Goose (Block)       |
+| =+mistral=  | Mistral Vibe        |
+| =+auggie=   | Augment Code Auggie |
+| =+qwen=     | Qwen Code           |
+| =+cursor=   | Cursor              |
+| =+github=   | GitHub Copilot      |
+| =+opencode= | OpenCode            |
+
+* Prerequisites
+Run =doom doctor= after installation to verify dependencies are detected.
+
+** +claude
+- =claude= CLI ([[https://code.claude.com][Claude Code]]) — run it once outside Emacs to log in
+- =claude-agent-acp=:
+  #+begin_src sh
+  npm install -g @agentclientprotocol/claude-agent-acp
+  #+end_src
+
+** +gemini
+- =gemini= CLI: https://github.com/google-gemini/gemini-cli
+
+** +codex
+- =codex-acp=:
+  #+begin_src sh
+  npm install -g @zed-industries/codex-acp
+  #+end_src
+
+** +goose
+- =goose= CLI: https://block.github.io/goose/docs/getting-started/installation
+
+** +mistral
+- =vibe-acp=:
+  #+begin_src sh
+  uv tool install mistral-vibe
+  #+end_src
+
+** +auggie
+- =auggie=:
+  #+begin_src sh
+  npm install -g @augmentcode/auggie
+  #+end_src
+
+** +qwen
+- =qwen=:
+  #+begin_src sh
+  npm install -g @qwen-code/qwen-code@latest
+  #+end_src
+
+** +cursor
+- =cursor-agent-acp=:
+  #+begin_src sh
+  npm install -g @blowmage/cursor-agent-acp
+  #+end_src
+
+** +github
+- =copilot= CLI: install GitHub Copilot CLI
+
+** +opencode
+- =opencode=: https://opencode.ai
+
+* Usage
+** Starting a shell
+| Keybinding | Description                    |
+|------------+--------------------------------|
+| =SPC A a=  | Open or reuse an agent shell   |
+| =SPC A n=  | Start a new agent shell        |
+| =SPC A t=  | Toggle agent shell window      |
+
+** Sending content
+| Keybinding | Description                              |
+|------------+------------------------------------------|
+| =SPC A s=  | Send region or error at point to shell   |
+| =SPC A f=  | Send current file to shell               |
+| =SPC A c=  | Compose a multi-line prompt              |
+| =SPC A i=  | Paste clipboard image into shell         |
+
+** Inside the shell
+| Keybinding  | Description                         |
+|-------------+-------------------------------------|
+| =RET=       | Submit prompt (normal mode)         |
+| =RET=       | Insert newline (insert mode)        |
+| =C-c C-c=   | Interrupt current agent operation   |
+| =TAB= / =S-TAB= | Navigate interactive elements   |
+| =C-<tab>=   | Cycle session mode                  |
+| =C-c C-o=   | Switch between shell and viewport   |
+
+** Evil notes
+- Normal mode =RET= submits the prompt.
+- Insert mode =RET= inserts a newline (use normal mode =RET= to send).
+- Diff buffers (=*agent-shell-diff*=) open in Emacs state so =y/n/p/q=
+  pass through directly. Press =C-z= to enter evil if needed.
+
+* Configuration
+Set authentication in your =config.el=:
+#+begin_src emacs-lisp
+;; Claude subscription login (default when using +claude)
+(setq agent-shell-anthropic-authentication
+      (agent-shell-anthropic-make-authentication :login t))
+
+;; Or API key
+(setq agent-shell-anthropic-authentication
+      (agent-shell-anthropic-make-authentication :api-key "your-key-here"))
+#+end_src
