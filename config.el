@@ -44,8 +44,10 @@
           (agent-shell-pool-make-config))))
 
   (when (featurep! :editor evil)
-    (evil-define-key 'insert agent-shell-mode-map (kbd "RET") #'newline)
+    (evil-define-key 'insert agent-shell-mode-map (kbd "RET") #'comint-send-input)
+    (evil-define-key 'insert agent-shell-mode-map (kbd "S-<return>") #'newline)
     (evil-define-key 'normal agent-shell-mode-map (kbd "RET") #'comint-send-input)
+    (evil-define-key 'normal agent-shell-mode-map (kbd "TAB") #'agent-shell-ui-toggle-fragment)
     (add-hook 'diff-mode-hook
               (lambda ()
                 (when (string-match-p "\\*agent-shell-diff\\*" (buffer-name))
